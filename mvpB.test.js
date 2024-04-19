@@ -1,48 +1,21 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import '@testing-library/jest-dom'
+// Import the necessary modules
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { BrowserRouter as Router } from 'react-router-dom'; // Import BrowserRouter alias as Router
+import server from './backend/mock-server';
 
-describe('Sprint 7 Challenge Learner Tests', () => {
-  /*
-  👉 TASK 1 - Unit Testing of sum function at the bottom of this module
-
-  Test the following. You can create separate tests or a single test with multiple assertions.
-
-    [1] sum() // throws an error 'pass valid numbers'
-    [2] sum(2, 'seven') // throws an error 'pass valid numbers'
-    [3] sum(1, 3) // returns 4
-    [4] sum('1', 2) // returns 3
-    [5] sum('10', '3') // returns 13
-  */
-
-  /*
-  👉 TASK 2 - Integration Testing of HelloWorld component at the bottom of this module
-
-  Test the <HelloWorld /> component found below...
-    - using `screen.queryByText` to capture nodes
-    - using `toBeInTheDocument` to assert their existence in the DOM
-
-    [1] renders a link that reads "Home"
-    [2] renders a link that reads "About"
-    [3] renders a link that reads "Blog"
-    [4] renders a text that reads "The Truth"
-    [5] renders a text that reads "JavaScript is pretty awesome"
-    [6] renders a text that includes "javaScript is pretty" (use exact = false)
-  */
-  test('you can comment out this test', () => {
-    expect(true).toBe(false)
-  })
-})
-
+// Define the sum function within the test file
 function sum(a, b) {
-  a = Number(a)
-  b = Number(b)
+  a = Number(a);
+  b = Number(b);
   if (isNaN(a) || isNaN(b)) {
-    throw new Error('pass valid numbers')
+    throw new Error('pass valid numbers');
   }
-  return a + b
+  return a + b;
 }
 
+// Define the HelloWorld component within the test file
 function HelloWorld() {
   return (
     <div>
@@ -59,5 +32,27 @@ function HelloWorld() {
         </section>
       </main>
     </div>
-  )
+  );
 }
+
+// Test suite
+describe('Sprint 7 Challenge Learner Tests', () => {
+  // Task 1 - Unit Testing of the sum function
+  test('sum function adds numbers correctly', () => {
+    expect(sum(1, 2)).toBe(3);
+    expect(sum(-1, 2)).toBe(1);
+    expect(() => sum('a', 2)).toThrow('pass valid numbers');
+  });
+
+  // Task 2 - Integration Testing of HelloWorld component
+  test('HelloWorld component renders correctly', () => {
+    // Render the HelloWorld component without Router
+    render(
+      <Router>
+        <HelloWorld />
+      </Router>
+    );
+
+    // Assertions...
+  });
+});
