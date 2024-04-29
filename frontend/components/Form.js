@@ -1,114 +1,124 @@
-import React, { useState } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import React, { useEffect,useState } from 'react';
+import axios from 'axios'; // Import Axios for HTTP requests
+import * as yup from 'yup';
+import { isValid } from 'ipaddr.js';
 
-const Form = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isError, setIsError] = useState(false);
 
-  const validationSchema = Yup.object({
-    firstName: Yup.string().required('First name is required'),
-    lastName: Yup.string().required('Last name is required'),
-    email: Yup.string().email('Invalid email address').required('Email is required'),
-    toppings: Yup.array().min(1, 'Select at least one topping'),
-  });
+const validationErrors = {
+  fullNameTooShort: "full name must be at least 3 characters",
+  fullNameTooLong: "full name must be at most 20 characters",
+  sizeIncorrect: "size must be S or M or L"
+}
 
-  const formik = useFormik({
-    initialValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      toppings: [],
-    },
-    validationSchema: validationSchema,
-    onSubmit: async (values) => {
-      try {
-        // Simulate form submission
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate async request
+const toppings = [
+  { topping_id: "1", text: "Pepperoni" },
+  { topping_id: "2", text: "Green Peppers" },
+  { topping_id: "3", text: "Pineapple" },
+  { topping_id: "4", text: "Mushrooms" },
+  { topping_id: "5", text: "Ham" },
+]
 
-        console.log('Form submitted:', values);
-        setIsSubmitted(true);
-        setIsError(false);
-      } catch (error) {
-        console.error('Error submitting form:', error);
-        setIsSubmitted(false);
-        setIsError(true);
-      }
-    },
-  });
-
-  return (
-    <div>
-      <h1>Order Form</h1>
-      <form onSubmit={formik.handleSubmit}>
-        <div>
-          <label htmlFor="firstName">First Name</label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.firstName}
-          />
-          {formik.touched.firstName && formik.errors.firstName ? (
-            <div className="error">{formik.errors.firstName}</div>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="lastName">Last Name</label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.lastName}
-          />
-          {formik.touched.lastName && formik.errors.lastName ? (
-            <div className="error">{formik.errors.lastName}</div>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.email}
-          />
-          {formik.touched.email && formik.errors.email ? (
-            <div className="error">{formik.errors.email}</div>
-          ) : null}
-        </div>
-        <div>
-          <label>Toppings</label>
-          {['Cheese', 'Pepperoni', 'Mushrooms', 'Onions'].map((topping) => (
-            <div key={topping}>
-              <input
-                type="checkbox"
-                id={topping}
-                name="toppings"
-                value={topping}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                checked={formik.values.toppings.includes(topping)}
-              />
-              <label htmlFor={topping}>{topping}</label>
-            </div>
-          ))}
-          {formik.touched.toppings && formik.errors.toppings ? (
-            <div className="error">{formik.errors.toppings}</div>
-          ) : null}
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-      {isSubmitted && <div className="success">Thank you for your order!</div>}
-      {isError && <div className="failure">Something went wrong</div>}
-    </div>
-  );
+const initialFormValues = {
+  fullName: '',
+  size: '',
+  toppings: []
 };
 
-export default Form;
+const initialErrors = {
+  fullName: "",
+  size: ""
+};
+
+const schema = yup.object().shape({
+fullName: yup.string().trim().min(3, validationErrors.fullNameTooShort).max(20, validationErrors.fullNameTooLong).required(),
+size: yup.string().oneOf(['S', 'M', 'L'], validationErrors.sizeIncorrect).required()
+});
+ 
+export default function Form() {
+  const [formValues, setFormValues] = useState(initialFormValues);
+  const [message, setMessage] = useState('');
+  const [isDisabled, setIsDisabled] = useState(true);
+  const [errors, setErrors] = useState(initialErrors);
+
+  const handleTextChange = (e) => {
+    const {id, value} = e.target;
+    setFormValues({...formValues, [id]: value})
+    yup.reach(schema, id).validate(value)
+    .then(() => {setErrors({...errors, [id]: ""})})
+    .catch((err) => {setErrors({...errors, [id]: err.errors[0]})})
+  }
+
+  useEffect(() => {
+    schema.isValid(formValues).then((valid) => {
+      setIsDisabled(!valid);
+    })
+  }, [formValues]);
+
+  const handleCheckboxChange = (e) => {
+    const {name, checked} = e.target;
+    const toppings = [...formValues.toppings];
+    if (checked) {
+      toppings.push(name);
+    } else {
+      toppings = toppings.filter((topping) => topping != name)
+    }
+    setFormValues({...formValues, toppings: toppings});
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const response = await axios.post('http://localhost:9009/api/order', formValues);
+    //console.log(response);
+    setMessage(response.data.message);
+    setFormValues(initialFormValues)
+  }
+
+  return(
+    <form onSubmit={handleSubmit}>
+      <h2>Order Your Pizza</h2>
+      {message && <div className='success'>{message}</div>}
+      {/* {true && <div className='failure'>Something went wrong</div>} */}
+
+      <div className='input-group'>
+      <div>
+      <label htmlFor='fullName'>Full Name</label><br />
+      <input 
+      onChange={handleTextChange}
+      value={formValues.fullName}
+      placeholder='Type full name' 
+      id="fullName" 
+      type="text" 
+      />
+      </div>
+      {errors.fullName && <div className='error'>{errors.fullName}</div>}
+      </div>
+
+      <div className='input-group'>
+        <div>
+          <label htmlFor='size'>Size</label>
+          <br />
+          <select onChange={handleTextChange} value={formValues.size} id="size">
+            <option value="">----Choose Size----</option>
+            <option value="S">Small</option>
+            <option value="M">Medium</option>
+            <option value="L">Large</option>
+          </select>
+        </div>
+        {errors.size && <div className='error'>{errors.size}</div>}
+      </div>
+
+      <div className='input-group'>
+        
+        {toppings.map((topping) => (
+        <label key={topping.topping_id}>
+          <input onChange={handleCheckboxChange} name={topping.topping_id} type="checkbox" />
+          {topping.text}
+          <br />
+        </label>
+      ) )}
+      </div>
+
+      <input disabled={isDisabled} type='submit' />
+    </form>
+  )
+}

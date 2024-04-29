@@ -1,42 +1,28 @@
 import React from 'react';
-import pizza from './images/pizza.jpg';
-import { Router } from 'react-router-dom';
-import { createMemoryHistory } from 'history'; // Import createMemoryHistory
+import { Link, useNavigate } from 'react-router-dom'; // Import Link component
+import PizzaImg from './images/pizza.jpg'
 
-// function Home() {
-//   // Create a memory history object
-//   const history = createMemoryHistory();
-
+// const Home = () => {
 //   return (
 //     <div>
-//       <h2>
-//         Welcome to Bloom Pizza!
-//       </h2>
-//       {/* Render the component with the Router using the created history object */}
-//       <Router history={history}>
-//         <Link to="/order">
-//           <img alt="order-pizza" style={{ cursor: 'pointer' }} src={pizza} />
-//         </Link>
-//       </Router>
+//       <h2>Welcome to Bloom Pizza.</h2>
+//       <p>This is the Home page.</p>
+//       {/* Add a Link to the pizza image */}
+//       <Link to="/order">
+//         <img src={PizzaImg} alt="order-pizza" />
+//       </Link>
 //     </div>
 //   );
-// }
-
-// export default Home;
-
-// import React from 'react';
-// import pizza from './images/pizza.jpg';
-import { Link } from 'react-router-dom';
+// };
 
 function Home() {
-  return (
+  const navigate = useNavigate();
+  return(
     <div>
-      <h2>
-        Welcome to Bloom Pizza!
-      </h2>
-      <Link to="/order">
-        <img alt="order-pizza" style={{ cursor: 'pointer' }} src={pizza} />
-      </Link>
+      <h2>Welcome to Bloom Pizza!</h2>
+      <img onClick={() => navigate("/order")} alt="order-pizza" style={{cursor: "pointer"}} src={PizzaImg} />
     </div>
-  );
+  )
 }
+
+export default Home;

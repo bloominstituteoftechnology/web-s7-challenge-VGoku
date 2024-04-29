@@ -32,7 +32,7 @@ You have been given a take-home coding assessment as part of the hiring process 
 2. Within your terminal, navigate to the project folder **and execute `npm i`**.
 3. After successful installation **execute `npm run dev`**.
 4. Run tests locally **executing `npm test`**.
-5. Load the app in Chrome by **navigating to `http://localhost:3003`**.
+5. Load the app in Chrome by **navigating to `http://locindexalhost:3003`**.
 
 **❗ Note:** On the event of NPM errors during setup, delete the `node_modules` folder and the `package-lock.json` file, and retry `npm i` and `npm run dev`.
 
